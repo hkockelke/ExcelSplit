@@ -11,13 +11,15 @@ namespace ExcelSplit
 {
     class Program
     {
+        const int expected_nb_fields = 88;
+
         static void Main(string[] args)
         {
             if (args.Length < 2)
             {
                 throw new Exception("Missing arguments: input-CSV-File output-directory ");
             }
-            
+
             string csvFile = args[0];
             string outDir = args[1];
 
@@ -70,6 +72,18 @@ namespace ExcelSplit
                 while (!csvParser.EndOfData)
                 {
                     string[] fields = csvParser.ReadFields();
+                    int nbFields = fields.Length;
+                    while (nbFields < expected_nb_fields)
+                    {
+                        // next nect line:
+                        string[] nextFields = csvParser.ReadFields();
+                        fields = my_concat(fields, nextFields);
+                        nbFields = fields.Length;
+                    }
+                    if (nbFields < expected_nb_fields)
+                    {
+                        throw new Exception("# Field less than expected_nb_fields: " + nbFields);
+                    }
                     string Level = fields[i_level];
                     string ID = fields[i_ID];
 
@@ -139,16 +153,23 @@ namespace ExcelSplit
                 int i_ics_1138 = Convert.ToInt32(columns["1138"]);
                 int i_ics_1139 = Convert.ToInt32(columns["1139"]);
                 int i_ics_1148 = Convert.ToInt32(columns["1148"]);
+                string Mat_lastLine = string.Empty;
 
                 while (!csvParser.EndOfData)
                 {
                     // Read current line fields, pointer moves to the next line.
                     string[] fields = csvParser.ReadFields();
-                    int nbField = fields.Length;
-
-                    if (nbField < 88)
+                    int nbFields = fields.Length;
+                    while (nbFields < expected_nb_fields)
                     {
-                        throw new Exception("nbFields<88: " + nbField.ToString());
+                        // read the next linie
+                        string[] nextFields = csvParser.ReadFields();
+                        fields = my_concat(fields, nextFields);
+                        nbFields = fields.Length;
+                    }
+                    if (nbFields < expected_nb_fields)
+                    {
+                        throw new Exception("nbFields<expected_nb_fields: " + nbFields.ToString());
                     }
 
                     string Level = fields[i_level];
@@ -165,50 +186,66 @@ namespace ExcelSplit
                     string s_ics_1138 = fields[i_ics_1138];
                     string s_ics_1139 = fields[i_ics_1139];
                     string s_ics_1148 = fields[i_ics_1148];
-                    string SAP_Material_Number = fields[i_SAP_Material_Number]; 
+                    string SAP_Material_Number = fields[i_SAP_Material_Number];
 
                     if (Level == "0")
                     {
                         string Baugruppe_Zeile2 = s_ics_1138 + "." + s_ics_1139 + "." + s_ics_1148;
                         string Baugruppe_Zeile3 = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDate;
                         string Teile_Nr_Zeile2 = Baugruppe_Zeile3;
+                        // Mat file
                         // 2nd line
                         outputKAT.AppendLine(";" + Baugruppe_Zeile2 + ";" + Teile_Nr_Zeile2 + Teile_Nr_Zeile2 + ";" + ";" + ";" + "EZ;");
                         // 3rd line
                         outputKAT.AppendLine(";" + Baugruppe_Zeile3 + ";" + Teile_Nr_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + ";" + ";" + ";EB;" + Teile_Nr_Zeile2 + "*.*");
                         // 4th line
-                        outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";0;1;"+ s_ics_1001);
+                        outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";0;1;" + s_ics_1001);
+                        Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1137 + ";" + s_ics_1135 + s_ics_1136 + ";" + s_ics_1135 + s_ics_1136 + ";" + s_ics_1135 + s_ics_1136 + ";J;;;;" + s_ics_1138 + "." + s_ics_1139 + ";" + s_item_id + "-" + CurrentDate + ";" + SAP_Material_Number;
+
+                        // Ser File
+                        string EB_Nr = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + CurrentDate;
+                        string Text_DE = s_ics_1135 + s_ics_1136 + s_ics_1137;
+                        outputSER.AppendLine(";" + EB_Nr + ";" + EB_Nr + ";" + Text_DE + ";EN-Default;ES-Default;FR-Default;ZH-Default;" + s_ics_1136 + ";" + s_ics_1137);
+
+                        // Str File
+                        string Strukturknoten_Zeile2 = s_ics_1138 + "." + s_ics_1139 + "." + s_ics_1148;
+                        string SKnoten_Verweis = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDate;
+                        string Laufende_Nummer = SKnoten_Verweis;
+                        string Text_DE_Str = SKnoten_Verweis + " " + s_ics_1135 + s_ics_1136;
+                        string Strukturknoten_Zeile3 = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + CurrentDate;
+
+                        outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;" + Text_DE_Str + ";;;;;;;");
+                        outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;" + SKnoten_Verweis + ";;K; ; ; ; ;Icon_eb; ;ETB;");
+                        outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;;;D; ; ; ; ;Icon_dok; ;DO;");
+
 
                         icounter++;
                     }
                     else if (Level == "1")
                     {
-                       
+
                         if (!itemIds.Contains(s_item_id))
                         {
                             itemIds.Add(s_item_id);
                             string Quantity = itemCounter[s_item_id].ToString();
-                            string EB_Nr = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + CurrentDate;
-                            string Text_DE = s_ics_1135 + s_ics_1136 + s_ics_1137;
+
+
                             string Text_EN = s_ics_1135 + s_ics_1136;
-                            string Strukturknoten = s_ics_1138 + "." + s_ics_1139 + "." + s_ics_1148;
-                            string SKnoten_Verweis = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDate;
-                            string Laufende_Nummer = SKnoten_Verweis;
-                            string Text_DE_Str = SKnoten_Verweis + " " + s_ics_1135 + s_ics_1136;
+
                             outputKAT.AppendLine(icounter.ToString() + ";EB" + s_item_id + ";" + s_item_revision_id + ";" + SAP_Material_Number + ";" + s_SequenceNumber + ";" + Quantity + ";;");
-                            
+
                             outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";WN000000;      ;        ;  ");
-                            
-                            outputSER.AppendLine(";"+ EB_Nr + ";" + EB_Nr + ";" + Text_DE + ";EN-Default;ES-Default;FR-Default;ZH-Default;" + s_ics_1136 + ";" + s_ics_1137);
-                            
-                            outputSTR.AppendLine(Strukturknoten + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;" + Text_DE_Str + ";;;;;;;");
-                            
+
+
+
                             icounter++;
                         }
                     }
                     //all other levels are intentionally omitted
 
                 }
+                // End of Data
+                outputMAT.AppendLine(Mat_lastLine);
 
             }
 
@@ -217,6 +254,28 @@ namespace ExcelSplit
             File.WriteAllText(MAToutcsvfile, outputMAT.ToString(), Encoding.UTF8);
             File.WriteAllText(SERoutcsvfile, outputSER.ToString(), Encoding.UTF8);
             File.WriteAllText(STRoutcsvfile, outputSTR.ToString(), Encoding.UTF8);
+        }
+
+        /// <summary>
+        /// conact 2 string arrays and add the first element of the second array to the last element of the first array
+        /// return the concatenated list
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <param name="nextFields"></param>
+        /// <returns>concated string array</returns>
+        private static string[] my_concat(string[] fields, string[] nextFields)
+        {
+            string[] out_fields = fields;
+            int nb_fields = fields.Length;
+            int nb_next_fields = nextFields.Length;
+            if (nb_next_fields < expected_nb_fields)
+            {
+                string last_field = fields.Last() + " " + nextFields.First();
+                fields[nb_fields - 1] = last_field;
+                out_fields = fields.Concat(nextFields.Skip(1)).ToArray();
+            }
+
+            return out_fields;
         }
     }
 }
