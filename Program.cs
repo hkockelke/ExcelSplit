@@ -11,7 +11,11 @@ namespace ExcelSplit
 {
     class Program
     {
-        const int expected_nb_fields = 88;
+        /// <summary>
+        /// PM_SPBOM_Export creates a CSV file, that has to be split into 4 files
+        /// </summary>
+        
+        const int expected_nb_fields = 91;
 
         static void Main(string[] args)
         {
@@ -75,7 +79,7 @@ namespace ExcelSplit
                     int nbFields = fields.Length;
                     while (nbFields < expected_nb_fields)
                     {
-                        // next nect line:
+                        // read next line:
                         string[] nextFields = csvParser.ReadFields();
                         fields = my_concat(fields, nextFields);
                         nbFields = fields.Length;
@@ -187,6 +191,7 @@ namespace ExcelSplit
                     string s_ics_1139 = fields[i_ics_1139];
                     string s_ics_1148 = fields[i_ics_1148];
                     string SAP_Material_Number = fields[i_SAP_Material_Number];
+                    string Text_EN = s_ics_1135 + s_ics_1136;
 
                     if (Level == "0")
                     {
@@ -202,6 +207,9 @@ namespace ExcelSplit
                         outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";0;1;" + s_ics_1001);
                         Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1137 + ";" + s_ics_1135 + s_ics_1136 + ";" + s_ics_1135 + s_ics_1136 + ";" + s_ics_1135 + s_ics_1136 + ";J;;;;" + s_ics_1138 + "." + s_ics_1139 + ";" + s_item_id + "-" + CurrentDate + ";" + SAP_Material_Number;
 
+                        // Mat File
+                        outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";WN000000;      ;        ;  ");
+
                         // Ser File
                         string EB_Nr = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + CurrentDate;
                         string Text_DE = s_ics_1135 + s_ics_1136 + s_ics_1137;
@@ -214,6 +222,7 @@ namespace ExcelSplit
                         string Text_DE_Str = SKnoten_Verweis + " " + s_ics_1135 + s_ics_1136;
                         string Strukturknoten_Zeile3 = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + CurrentDate;
 
+                        // Zeile 2,3,4
                         outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;" + Text_DE_Str + ";;;;;;;");
                         outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;" + SKnoten_Verweis + ";;K; ; ; ; ;Icon_eb; ;ETB;");
                         outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;;;D; ; ; ; ;Icon_dok; ;DO;");
@@ -229,14 +238,9 @@ namespace ExcelSplit
                             itemIds.Add(s_item_id);
                             string Quantity = itemCounter[s_item_id].ToString();
 
-
-                            string Text_EN = s_ics_1135 + s_ics_1136;
-
                             outputKAT.AppendLine(icounter.ToString() + ";EB" + s_item_id + ";" + s_item_revision_id + ";" + SAP_Material_Number + ";" + s_SequenceNumber + ";" + Quantity + ";;");
 
                             outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";WN000000;      ;        ;  ");
-
-
 
                             icounter++;
                         }
@@ -257,7 +261,8 @@ namespace ExcelSplit
         }
 
         /// <summary>
-        /// conact 2 string arrays and add the first element of the second array to the last element of the first array
+        /// conact 2 string arrays and 
+        /// add the first element of the second array to the last element of the first array 
         /// return the concatenated list
         /// </summary>
         /// <param name="fields"></param>
