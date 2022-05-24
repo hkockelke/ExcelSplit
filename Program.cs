@@ -12,10 +12,13 @@ namespace ExcelSplit
     class Program
     {
         /// <summary>
-        /// PM_SPBOM_Export creates a CSV file, that has to be split into 4 files
+        /// PLM XML Export Admin: PM_SPBOM_Export creates a XML file, that has to be split into 4 csv files
+        /// see Property Set to enlarge the export
+        /// Dispatcher XSLT: spbom_export.xsl transfrom the result xml to CSV 
+        /// This is the input CSV file for this exe
         /// </summary>
-        
-        const int expected_nb_fields = 91;
+
+        const int expected_nb_fields = 93;
 
         static void Main(string[] args)
         {
@@ -143,6 +146,8 @@ namespace ExcelSplit
                 int i_pm5_dr_surface_finish = Convert.ToInt32(columns["pm5_dr_surface_finish"]);
                 int i_pm5_dr_welding_ge_eb_pa = Convert.ToInt32(columns["pm5_dr_welding_ge_eb_pa"]);
                 int i_pm5_dr_welding_length = Convert.ToInt32(columns["pm5_dr_welding_length"]);
+                int i_pm5_ir_cp_class_id = Convert.ToInt32(columns["pm5_ir_cp_class_id"]);
+                int i_pm5_dr_cp_mat_template = Convert.ToInt32(columns["pm5_dr_cp_mat_template"]);
                 int i_ics_1001 = Convert.ToInt32(columns["1001"]);
                 int i_ics_1002 = Convert.ToInt32(columns["1002"]);
                 int i_ics_1003 = Convert.ToInt32(columns["1003"]);
@@ -180,6 +185,8 @@ namespace ExcelSplit
                     string s_item_id = fields[i_ID];
                     string s_SequenceNumber = fields[i_SequenceNumber];
                     string s_item_revision_id = fields[i_item_revision_id];
+                    string s_pm5_ir_cp_class_id = fields[i_pm5_ir_cp_class_id];
+                    string s_pm5_dr_cp_mat_template = fields[i_pm5_dr_cp_mat_template];
                     string s_ics_1001 = fields[i_ics_1001];
                     string s_ics_1007 = fields[i_ics_1007];
                     string s_ics_1011 = fields[i_ics_1011];
@@ -192,6 +199,16 @@ namespace ExcelSplit
                     string s_ics_1148 = fields[i_ics_1148];
                     string SAP_Material_Number = fields[i_SAP_Material_Number];
                     string Text_EN = s_ics_1135 + s_ics_1136;
+
+                    String WN000000 = "WN000000";
+                    if (!string.IsNullOrEmpty(s_pm5_ir_cp_class_id))
+                    {
+                        WN000000 = s_pm5_ir_cp_class_id;
+                    }
+                    else if (!string.IsNullOrEmpty(s_pm5_dr_cp_mat_template))
+                    {
+                        WN000000 = s_pm5_dr_cp_mat_template;
+                    }
 
                     if (Level == "0")
                     {
@@ -208,7 +225,7 @@ namespace ExcelSplit
                         Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1137 + ";" + s_ics_1135 + s_ics_1136 + ";" + s_ics_1135 + s_ics_1136 + ";" + s_ics_1135 + s_ics_1136 + ";J;;;;" + s_ics_1138 + "." + s_ics_1139 + ";" + s_item_id + "-" + CurrentDate + ";" + SAP_Material_Number;
 
                         // Mat File
-                        outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";WN000000;      ;        ;  ");
+                        outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + WN000000 + "; ; ; ");
 
                         // Ser File
                         string EB_Nr = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + CurrentDate;
@@ -240,7 +257,7 @@ namespace ExcelSplit
 
                             outputKAT.AppendLine(icounter.ToString() + ";EB" + s_item_id + ";" + s_item_revision_id + ";" + SAP_Material_Number + ";" + s_SequenceNumber + ";" + Quantity + ";;");
 
-                            outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";WN000000;      ;        ;  ");
+                            outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + WN000000 + "; ;  ; ");
 
                             icounter++;
                         }
