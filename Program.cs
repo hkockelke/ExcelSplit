@@ -34,12 +34,13 @@ namespace ExcelSplit
             string outname = csvFilename.Replace("_load", "");
 
             DateTime utcDate = DateTime.UtcNow;
-            string CurrentDate = utcDate.ToString("yyMM");
+            string CurrentDateShort = utcDate.ToString("yyMM");
+            string CurrentDateLong = utcDate.ToString("yyyyMMdd");
 
-            string KAToutcsvfile = Path.Combine(outDir, "Kat" + outname);
-            string MAToutcsvfile = Path.Combine(outDir, "Mat" + outname);
-            string SERoutcsvfile = Path.Combine(outDir, "Ser" + outname);
-            string STRoutcsvfile = Path.Combine(outDir, "Str" + outname);
+            string KAToutcsvfile = Path.Combine(outDir, "Kat" + CurrentDateLong + "_" + outname);
+            string MAToutcsvfile = Path.Combine(outDir, "Mat" + CurrentDateLong + "_" + outname);
+            string SERoutcsvfile = Path.Combine(outDir, "Ser" + CurrentDateLong + "_" + outname);
+            string STRoutcsvfile = Path.Combine(outDir, "Str" + CurrentDateLong + "_" + outname);
 
             StringBuilder outputKAT = new StringBuilder();
             StringBuilder outputMAT = new StringBuilder();
@@ -130,7 +131,6 @@ namespace ExcelSplit
                 int i_SequenceNumber = Convert.ToInt32(columns["SequenceNumber"]);
                 int i_bl_quantity = Convert.ToInt32(columns["bl_quantity"]);
                 int i_ID = Convert.ToInt32(columns["item_id"]);
-                //int i_SAP_Material_Number = Convert.ToInt32(columns["SAP Material Number"]);
                 int i_SAP_Material_Number = Convert.ToInt32(columns["pm5_dr_rtp_mat_no_res"]);
                 int i_item_revision_id = Convert.ToInt32(columns["item_revision_id"]);
                 int i_object_name = Convert.ToInt32(columns["object_name"]);
@@ -163,6 +163,7 @@ namespace ExcelSplit
                 int i_ics_1139 = Convert.ToInt32(columns["1139"]);
                 int i_ics_1148 = Convert.ToInt32(columns["1148"]);
                 string Mat_lastLine = string.Empty;
+                string Baugruppe_Zeile3 = string.Empty;
 
                 while (!csvParser.EndOfData)
                 {
@@ -200,66 +201,73 @@ namespace ExcelSplit
                     string SAP_Material_Number = fields[i_SAP_Material_Number];
                     string Text_EN = s_ics_1135 + s_ics_1136;
 
-                    String WN000000 = "WN000000";
+                    
+                    string Werknorm = "WN000000";
                     if (!string.IsNullOrEmpty(s_pm5_ir_cp_class_id))
                     {
-                        WN000000 = s_pm5_ir_cp_class_id;
+                        Werknorm = s_pm5_ir_cp_class_id;
                     }
                     else if (!string.IsNullOrEmpty(s_pm5_dr_cp_mat_template))
                     {
-                        WN000000 = s_pm5_dr_cp_mat_template;
+                        Werknorm = s_pm5_dr_cp_mat_template;
                     }
 
                     if (Level == "0")
                     {
+                        icounter++;
+
                         string Baugruppe_Zeile2 = s_ics_1138 + "." + s_ics_1139 + "." + s_ics_1148;
-                        string Baugruppe_Zeile3 = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDate;
+                        Baugruppe_Zeile3 = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDateShort;
                         string Teile_Nr_Zeile2 = Baugruppe_Zeile3;
-                        // Mat file
+                        
+                        // Kat file
                         // 2nd line
-                        outputKAT.AppendLine(";" + Baugruppe_Zeile2 + ";" + Teile_Nr_Zeile2 + Teile_Nr_Zeile2 + ";" + ";" + ";" + "EZ;");
+                        outputKAT.AppendLine(";" + Baugruppe_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + ";" + ";" + ";EZ;");
                         // 3rd line
                         outputKAT.AppendLine(";" + Baugruppe_Zeile3 + ";" + Teile_Nr_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + ";" + ";" + ";EB;" + Teile_Nr_Zeile2 + "*.*");
                         // 4th line
                         outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";0;1;" + s_ics_1001);
-                        Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1137 + ";" + s_ics_1135 + s_ics_1136 + ";" + s_ics_1135 + s_ics_1136 + ";" + s_ics_1135 + s_ics_1136 + ";J;;;;" + s_ics_1138 + "." + s_ics_1139 + ";" + s_item_id + "-" + CurrentDate + ";" + SAP_Material_Number;
+                        Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1137 + ";" + s_ics_1135 + s_ics_1136 + ";" + s_ics_1135 + s_ics_1136 + ";" + s_ics_1135 + s_ics_1136 + ";;J;;;;;" + s_ics_1138 + "." + s_ics_1139 + ";" + s_item_id + "-" + CurrentDateShort + ";" + SAP_Material_Number;
 
                         // Mat File
-                        outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + WN000000 + "; ; ; ");
+                        outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + Werknorm + "; ; ; ");
 
                         // Ser File
-                        string EB_Nr = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + CurrentDate;
+                        string EB_Nr = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + CurrentDateShort;
                         string Text_DE = s_ics_1135 + s_ics_1136 + s_ics_1137;
                         outputSER.AppendLine(";" + EB_Nr + ";" + EB_Nr + ";" + Text_DE + ";EN-Default;ES-Default;FR-Default;ZH-Default;" + s_ics_1136 + ";" + s_ics_1137);
 
                         // Str File
                         string Strukturknoten_Zeile2 = s_ics_1138 + "." + s_ics_1139 + "." + s_ics_1148;
-                        string SKnoten_Verweis = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDate;
+                        string SKnoten_Verweis = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDateShort;
                         string Laufende_Nummer = SKnoten_Verweis;
                         string Text_DE_Str = SKnoten_Verweis + " " + s_ics_1135 + s_ics_1136;
-                        string Strukturknoten_Zeile3 = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + CurrentDate;
+                        string Strukturknoten_Zeile3 = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + CurrentDateShort;
 
                         // Zeile 2,3,4
                         outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;" + Text_DE_Str + ";;;;;;;");
-                        outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;" + SKnoten_Verweis + ";;K; ; ; ; ;Icon_eb; ;ETB;");
-                        outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;;;D; ; ; ; ;Icon_dok; ;DO;");
+                        outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;" + SKnoten_Verweis + ";;K;&Ersatzteilblatt;&Spare parts sheet ; ; ;Icon_eb; ;ETB;");
+                        outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;;;D;&Dokumentation;&Documentation ; ; ;Icon_dok; ;DO;");
 
-
-                        icounter++;
                     }
                     else if (Level == "1")
                     {
 
                         if (!itemIds.Contains(s_item_id))
                         {
+                            icounter++;
+
                             itemIds.Add(s_item_id);
                             string Quantity = itemCounter[s_item_id].ToString();
+                            if (string.IsNullOrEmpty(SAP_Material_Number))
+                            {
+                                SAP_Material_Number = "Empty SAPMatNo";
+                            }
 
-                            outputKAT.AppendLine(icounter.ToString() + ";EB" + s_item_id + ";" + s_item_revision_id + ";" + SAP_Material_Number + ";" + s_SequenceNumber + ";" + Quantity + ";;");
+                            outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";" + s_SequenceNumber + ";" + Quantity + ";" + s_ics_1001 + ";");
 
-                            outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + WN000000 + "; ;  ; ");
+                            outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + Werknorm + "; ;  ; ");
 
-                            icounter++;
                         }
                     }
                     //all other levels are intentionally omitted
