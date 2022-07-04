@@ -202,15 +202,7 @@ namespace ExcelSplit
                     string Text_EN = s_ics_1135 + s_ics_1136;
 
                     int n_SequenceNumber = 0;
-                    if (!Int32.TryParse(s_SequenceNumber, out n_SequenceNumber))
-                    {
-                        n_SequenceNumber = icounter;
-                        Console.WriteLine("SequenceNumber not a number: " + s_SequenceNumber);
-                    }
-                    else
-                    {
-                        n_SequenceNumber = n_SequenceNumber / 10;
-                    }
+                    
 
                     string Werknorm = "WN000000";
                     if (!string.IsNullOrEmpty(s_pm5_ir_cp_class_id))
@@ -243,9 +235,9 @@ namespace ExcelSplit
                         Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;;;;;" + s_ics_1138 + "." + s_ics_1139 + ";" + s_item_id + "-" + CurrentDateShort + ";" + SAP_Material_Number;
 
                         // Ser File
-                        string EB_Nr = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + "-" + CurrentDateShort;
+                        string EB_Nr = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDateShort;
                         string Text_DE = s_ics_1135 + s_ics_1136 + s_ics_1137;
-                        outputSER.AppendLine(";" + EB_Nr + ";" + EB_Nr + ";" + Text_DE + ";" + s_ics_1135 + ";" + s_ics_1135 + ";" + s_ics_1135 + ";" + s_ics_1135 + ";" + s_ics_1136 + ";" + s_ics_1137);
+                        outputSER.AppendLine(";" + EB_Nr + ";" + EB_Nr + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + s_ics_1137);
 
                         // Str File
                         string Strukturknoten_Zeile2 = s_ics_1138 + "." + s_ics_1139 + "." + s_ics_1148;
@@ -255,7 +247,7 @@ namespace ExcelSplit
                         string Strukturknoten_Zeile3 = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDateShort;
 
                         // Zeile 2,3,4
-                        outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";;" + s_ics_1135 + ";"+ SKnoten_Verweis + " / P;");
+                        outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";;" + Text_DE_Str + ";" + s_ics_1135 + ";"+ SKnoten_Verweis);
                         outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;" + SKnoten_Verweis + ";1;K;&Ersatzteilblatt;&Spare parts sheet;&Hoja de repuestos;&Feuille des pièces de rechange;Icon_eb;&备件表;ETB;");
                         outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;0;2;D;&Dokumentation;&Documentation;&Documentaión;&Documentation;Icon_dok;&文件;DO;");
 
@@ -265,6 +257,15 @@ namespace ExcelSplit
 
                         if (!itemIds.Contains(s_item_id))
                         {
+                            if (!Int32.TryParse(s_SequenceNumber, out n_SequenceNumber))
+                            {
+                                n_SequenceNumber = icounter;
+                                Console.WriteLine("SequenceNumber not a number: " + s_SequenceNumber);
+                            }
+                            else
+                            {
+                                n_SequenceNumber = n_SequenceNumber / 10;
+                            }
                             icounter++;
 
                             itemIds.Add(s_item_id);
