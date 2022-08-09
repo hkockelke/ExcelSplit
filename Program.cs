@@ -6,6 +6,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.VisualBasic.FileIO;
 using System.Collections;
+/* Change history:
+ * July 25, 2022: add attribute pm5_dr_sap_size_dim (
+ * */
 
 namespace ExcelSplit
 {
@@ -18,7 +21,7 @@ namespace ExcelSplit
         /// This is the input CSV file for this exe
         /// </summary>
 
-        const int expected_nb_fields = 93;
+        const int expected_nb_fields = 94;
 
         static void Main(string[] args)
         {
@@ -122,10 +125,14 @@ namespace ExcelSplit
 
                 // Skip the row with the column names
                 string HeaderLine = csvParser.ReadLine();
-                outputKAT.AppendLine("LFD;Baugruppe;Teile-Nr;Verweis_auf_Baugruppe;POS;Menge;ME;Stue_Typ;Zeichnung");
-                outputMAT.AppendLine("MATNR;Groesse_DIM;Text_DE;Text_EN;Text_ES;Text_FR;B;K;E;M;WN;Dru_EG;Dru_Rest;Drucken_Materialien");
-                outputSER.AppendLine("Masch-Nr;EB-Nr;K_VARI;Text_DE;Text_EN;Text_ES;Text_FR;Text_ZH;TextNr;GrößeAbmessung");
-                outputSTR.AppendLine("Strukturknoten;SKnoten Verweis;Verweis Nr;Laufende Nummer;T;Text_DE;Text_EN;Text_ES;Text_FR;Icon;Text_ZH;TextNr;GrößeAbmessung");
+                // Aug 09, 2022 new fields after Zeichnung
+                outputKAT.AppendLine("LFD;Baugruppe;Teile-Nr;Verweis_auf_Baugruppe;POS;Menge;ME;Stue_Typ;Zeichnung;Stufe;B;Zusatzinfo;Info_1;Lfd-Nr;SRP;naG;sTL;NM;Icon_Name");
+                // Aug 09, 2022 outputMAT.AppendLine("MATNR;Groesse_DIM;Text_DE;Text_EN;Text_ES;Text_FR;B;K;E;M;WN;Dru_EG;Dru_Rest;Drucken_Materialien");
+                outputMAT.AppendLine("MATNR;Groesse_DIM;Text_DE;B;K;E;M;WN;Dru_EG;Dru_Rest;Drucken_Materialien");
+                // Aug 09, 2022 outputSER.AppendLine("Masch-Nr;EB-Nr;K_VARI;Text_DE;Text_EN;Text_ES;Text_FR;Text_ZH;TextNr;GrößeAbmessung");
+                outputSER.AppendLine("Masch-Nr;EB-Nr;K_VARI;TextNr;GrößeAbmessung");
+                // Aug 09, 2022 outputSTR.AppendLine("Strukturknoten;SKnoten Verweis;Verweis Nr;Laufende Nummer;T;Text_DE;Text_EN;Text_ES;Text_FR;Icon;Text_ZH;TextNr;GrößeAbmessung");
+                outputSTR.AppendLine("Strukturknoten;SKnoten Verweis;Verweis Nr;Laufende Nummer;T;Icon;TextNr;GrößeAbmessung");
 
                 int i_level = Convert.ToInt32(columns["Level"]);
                 int i_SequenceNumber = Convert.ToInt32(columns["SequenceNumber"]);
@@ -148,6 +155,7 @@ namespace ExcelSplit
                 int i_pm5_dr_welding_length = Convert.ToInt32(columns["pm5_dr_welding_length"]);
                 int i_pm5_ir_cp_class_id = Convert.ToInt32(columns["pm5_ir_cp_class_id"]);
                 int i_pm5_dr_cp_mat_template = Convert.ToInt32(columns["pm5_dr_cp_mat_template"]);
+                int i_pm5_dr_sap_size_dim = Convert.ToInt32(columns["pm5_dr_sap_size_dim"]);
                 int i_ics_1001 = Convert.ToInt32(columns["1001"]);
                 int i_ics_1002 = Convert.ToInt32(columns["1002"]);
                 int i_ics_1003 = Convert.ToInt32(columns["1003"]);
@@ -188,6 +196,7 @@ namespace ExcelSplit
                     string s_item_revision_id = fields[i_item_revision_id];
                     string s_pm5_ir_cp_class_id = fields[i_pm5_ir_cp_class_id];
                     string s_pm5_dr_cp_mat_template = fields[i_pm5_dr_cp_mat_template];
+                    string s_pm5_dr_sap_size_dim = fields[i_pm5_dr_sap_size_dim];
                     string s_ics_1001 = fields[i_ics_1001];
                     string s_ics_1007 = fields[i_ics_1007];
                     string s_ics_1011 = fields[i_ics_1011];
@@ -200,6 +209,8 @@ namespace ExcelSplit
                     string s_ics_1148 = fields[i_ics_1148];
                     string SAP_Material_Number = fields[i_SAP_Material_Number];
                     string Text_EN = s_ics_1135 + s_ics_1136;
+                    Text_EN = " " + Text_EN.PadLeft(6, '0');
+                    s_ics_1138 = s_ics_1138.TrimStart('0');
 
                     int n_SequenceNumber = 0;
                     
@@ -224,32 +235,40 @@ namespace ExcelSplit
                         
                         // Kat file
                         // 2nd line
-                        outputKAT.AppendLine(";" + Baugruppe_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + ";" + ";" + ";EZ;");
+                        // Aug 09, 2022 outputKAT.AppendLine(";" + Baugruppe_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + ";" + ";" + ";EZ;");
+                        outputKAT.AppendLine("; " + Baugruppe_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + ";" + ";" + ";EZ;;;;;;" + Teile_Nr_Zeile2 + ";;;;");
                         // 3rd line
                         outputKAT.AppendLine(";" + Baugruppe_Zeile3 + ";" + Teile_Nr_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + ";" + ";" + ";EB;" + Teile_Nr_Zeile2 + "*.*");
                         // 4th line
-                        outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";0;1;" + s_ics_1001);
+                        outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";0;1;" + s_ics_1001 + ";;;;J");
                         
                         // Mat File
-                        outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + Werknorm + "; ; ; ");
-                        Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;;;;;" + s_ics_1138 + "." + s_ics_1139 + ";" + s_item_id + "-" + CurrentDateShort + ";" + SAP_Material_Number;
+                        outputMAT.AppendLine(SAP_Material_Number + ";" + s_pm5_dr_sap_size_dim + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + Werknorm + "; ; ; ");
+                        // Aug 09, 2022 Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;;;;;" + s_ics_1138 + "." + s_ics_1139 + ";" + s_item_id + "-" + CurrentDateShort + ";" + SAP_Material_Number;
+                        Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1137 + ";" + Text_EN + ";J;;;;;" + s_ics_1138 + "." + s_ics_1139 + ";" + s_item_id + "-" + CurrentDateShort + ";" + SAP_Material_Number;
 
                         // Ser File
                         string EB_Nr = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDateShort;
-                        string Text_DE = s_ics_1135 + s_ics_1136 + s_ics_1137;
-                        outputSER.AppendLine(";" + EB_Nr + ";" + EB_Nr + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + s_ics_1137);
+                        string Text_DE = s_ics_1135 + s_ics_1136 + s_ics_1137; // ?
+                        Text_DE = Text_DE.PadLeft(6, '0'); // Aug 09, 2022
+                        // Aug 9, 2022 outputSER.AppendLine(";" + EB_Nr + ";" + EB_Nr + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + s_pm5_dr_sap_size_dim);
+                        outputSER.AppendLine(";" + EB_Nr + ";" + EB_Nr + ";" + Text_DE + ";" + s_pm5_dr_sap_size_dim);
 
                         // Str File
                         string Strukturknoten_Zeile2 = s_ics_1138 + "." + s_ics_1139 + "." + s_ics_1148;
-                        string SKnoten_Verweis = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDateShort;
+                        string SKnoten_Verweis = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + SAP_Material_Number + "-" + CurrentDateShort;
                         string Laufende_Nummer = SKnoten_Verweis;
                         string Text_DE_Str = SKnoten_Verweis + " " + s_ics_1135 + s_ics_1136;
-                        string Strukturknoten_Zeile3 = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDateShort;
+                        string Strukturknoten_Zeile3 = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + SAP_Material_Number + "-" + CurrentDateShort;
 
                         // Zeile 2,3,4
-                        outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";;" + Text_DE_Str + ";" + s_ics_1135 + ";"+ SKnoten_Verweis);
-                        outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;" + SKnoten_Verweis + ";1;K;&Ersatzteilblatt;&Spare parts sheet;&Hoja de repuestos;&Feuille des pièces de rechange;Icon_eb;&备件表;ETB;");
-                        outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;0;2;D;&Dokumentation;&Documentation;&Documentaión;&Documentation;Icon_dok;&文件;DO;");
+                        // Aug 09, 2022 outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";;" + Text_DE_Str + ";" + s_ics_1135 + ";"+ SKnoten_Verweis);
+                        string Text_Nr = s_ics_1135.PadLeft(6, '0');
+                        outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;;" + Text_Nr + ";"+ SKnoten_Verweis);
+                        // Aug 09, 2022 outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;" + SKnoten_Verweis + ";1;K;&Ersatzteilblatt;&Spare parts sheet;&Hoja de repuestos;&Feuille des pièces de rechange;Icon_eb;&备件表;ETB;");
+                        outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;" + SKnoten_Verweis + ";1;K;Icon_eb;ETB;");
+                        // Aug 09, 2022 outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;0;2;D;&Dokumentation;&Documentation;&Documentaión;&Documentation;Icon_dok;&文件;DO;");
+                        outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;0;2;D;Icon_dok;DO;");
 
                     }
                     else if (Level == "1")
@@ -262,10 +281,12 @@ namespace ExcelSplit
                                 n_SequenceNumber = icounter;
                                 Console.WriteLine("SequenceNumber not a number: " + s_SequenceNumber);
                             }
+                            /* Aug 09, 2022
                             else
                             {
                                 n_SequenceNumber = n_SequenceNumber / 10;
                             }
+                            */
                             icounter++;
 
                             itemIds.Add(s_item_id);
@@ -275,9 +296,17 @@ namespace ExcelSplit
                                 SAP_Material_Number = "Empty SAPMatNo";
                             }
 
-                            outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";" + n_SequenceNumber.ToString() + ";" + Quantity + ";" + s_ics_1001 + ";");
+                            // Aug 09, 2022 add J and .
+                            if (n_SequenceNumber == 0)
+                            {
+                                outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";" + n_SequenceNumber.ToString() + ";" + Quantity + ";" + s_ics_1001 + ";;;;J");
+                            }
+                            else
+                            {
+                                outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";" + n_SequenceNumber.ToString() + ";" + Quantity + ";" + s_ics_1001 + ";;;.;J");
+                            }
 
-                            outputMAT.AppendLine(SAP_Material_Number + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + Werknorm + "; ;  ; ");
+                            outputMAT.AppendLine(SAP_Material_Number + ";" + s_pm5_dr_sap_size_dim + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + Werknorm + "; ;  ; ");
 
                         }
                     }
