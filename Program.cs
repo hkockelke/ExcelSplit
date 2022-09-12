@@ -8,6 +8,15 @@ using Microsoft.VisualBasic.FileIO;
 using System.Collections;
 /* Change history:
  * July 25, 2022: add attribute pm5_dr_sap_size_dim (
+ * Sept 12, 2022: 
+ * ALTE Attribute ID	NEUE Attribute ID
+ * 1135	                1013
+ * 1136	                1014
+ * 1137	                1015
+ * 1138	                1016
+ * 1139	                1017
+ * 1014	                1018
+ * 1013	                1019
  * */
 
 namespace ExcelSplit
@@ -39,6 +48,14 @@ namespace ExcelSplit
             DateTime utcDate = DateTime.UtcNow;
             string CurrentDateShort = utcDate.ToString("yyMM");
             string CurrentDateLong = utcDate.ToString("yyyyMMdd");
+
+            // create out-dir: outDir/CurrentDateLong_outname
+            // and use in the output
+            outDir = Path.Combine(outDir, CurrentDateLong + "_" + outname);
+            if (!Directory.Exists(outDir))
+            {
+                Directory.CreateDirectory(outDir);
+            }
 
             string KAToutcsvfile = Path.Combine(outDir, "Kat" + CurrentDateLong + "_" + outname);
             string MAToutcsvfile = Path.Combine(outDir, "Mat" + CurrentDateLong + "_" + outname);
@@ -164,11 +181,11 @@ namespace ExcelSplit
                 int i_ics_1007 = Convert.ToInt32(columns["1007"]);
                 int i_ics_1011 = Convert.ToInt32(columns["1011"]);
                 int i_ics_1012 = Convert.ToInt32(columns["1012"]);
-                int i_ics_1135 = Convert.ToInt32(columns["1135"]);
-                int i_ics_1136 = Convert.ToInt32(columns["1136"]);
-                int i_ics_1137 = Convert.ToInt32(columns["1137"]);
-                int i_ics_1138 = Convert.ToInt32(columns["1138"]);
-                int i_ics_1139 = Convert.ToInt32(columns["1139"]);
+                int i_ics_1013 = Convert.ToInt32(columns["1013"]);
+                int i_ics_1014 = Convert.ToInt32(columns["1014"]);
+                int i_ics_1015 = Convert.ToInt32(columns["1015"]);
+                int i_ics_1016 = Convert.ToInt32(columns["1016"]);
+                int i_ics_1017 = Convert.ToInt32(columns["1017"]);
                 int i_ics_1148 = Convert.ToInt32(columns["1148"]);
                 string Mat_lastLine = string.Empty;
                 string Baugruppe_Zeile3 = string.Empty;
@@ -201,16 +218,16 @@ namespace ExcelSplit
                     string s_ics_1007 = fields[i_ics_1007];
                     string s_ics_1011 = fields[i_ics_1011];
                     string s_ics_1012 = fields[i_ics_1012];
-                    string s_ics_1135 = fields[i_ics_1135];
-                    string s_ics_1136 = fields[i_ics_1136];
-                    string s_ics_1137 = fields[i_ics_1137];
-                    string s_ics_1138 = fields[i_ics_1138];
-                    string s_ics_1139 = fields[i_ics_1139];
+                    string s_ics_1013 = fields[i_ics_1013];
+                    string s_ics_1014 = fields[i_ics_1014];
+                    string s_ics_1015 = fields[i_ics_1015];
+                    string s_ics_1016 = fields[i_ics_1016];
+                    string s_ics_1017 = fields[i_ics_1017];
                     string s_ics_1148 = fields[i_ics_1148];
                     string SAP_Material_Number = fields[i_SAP_Material_Number];
-                    string Text_EN = s_ics_1135 + s_ics_1136;
+                    string Text_EN = s_ics_1013 + s_ics_1014;
                     Text_EN = " " + Text_EN.PadLeft(6, '0');
-                    s_ics_1138 = s_ics_1138.TrimStart('0');
+                    s_ics_1016 = s_ics_1016.TrimStart('0');
 
                     int n_SequenceNumber = 0;
                     
@@ -229,8 +246,8 @@ namespace ExcelSplit
                     {
                         icounter++;
 
-                        string Baugruppe_Zeile2 = s_ics_1138 + "." + s_ics_1139 + "." + s_ics_1148;
-                        Baugruppe_Zeile3 = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDateShort;
+                        string Baugruppe_Zeile2 = s_ics_1016 + "." + s_ics_1017 + "." + s_ics_1148;
+                        Baugruppe_Zeile3 = "EB" + s_ics_1016 + "-" + s_ics_1017 + "-" + s_item_id + "-" + CurrentDateShort;
                         string Teile_Nr_Zeile2 = Baugruppe_Zeile3;
                         
                         // Kat file
@@ -244,26 +261,26 @@ namespace ExcelSplit
                         
                         // Mat File
                         outputMAT.AppendLine(SAP_Material_Number + ";" + s_pm5_dr_sap_size_dim + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + Werknorm + "; ; ; ");
-                        // Aug 09, 2022 Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1137 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;;;;;" + s_ics_1138 + "." + s_ics_1139 + ";" + s_item_id + "-" + CurrentDateShort + ";" + SAP_Material_Number;
-                        Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1137 + ";" + Text_EN + ";J;;;;;" + s_ics_1138 + "." + s_ics_1139 + ";" + s_item_id + "-" + CurrentDateShort + ";" + SAP_Material_Number;
+                        // Aug 09, 2022 Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1015 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;;;;;" + s_ics_1016 + "." + s_ics_1017 + ";" + s_item_id + "-" + CurrentDateShort + ";" + SAP_Material_Number;
+                        Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1015 + ";" + Text_EN + ";J;;;;;" + s_ics_1016 + "." + s_ics_1017 + ";" + s_item_id + "-" + CurrentDateShort + ";" + SAP_Material_Number;
 
                         // Ser File
-                        string EB_Nr = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + s_item_id + "-" + CurrentDateShort;
-                        string Text_DE = s_ics_1135 + s_ics_1136 + s_ics_1137; // ?
+                        string EB_Nr = "EB" + s_ics_1016 + "-" + s_ics_1017 + "-" + s_item_id + "-" + CurrentDateShort;
+                        string Text_DE = s_ics_1013 + s_ics_1014 + s_ics_1015; // ?
                         Text_DE = Text_DE.PadLeft(6, '0'); // Aug 09, 2022
                         // Aug 9, 2022 outputSER.AppendLine(";" + EB_Nr + ";" + EB_Nr + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + Text_DE + ";" + s_pm5_dr_sap_size_dim);
                         outputSER.AppendLine(";" + EB_Nr + ";" + EB_Nr + ";" + Text_DE + ";" + s_pm5_dr_sap_size_dim);
 
                         // Str File
-                        string Strukturknoten_Zeile2 = s_ics_1138 + "." + s_ics_1139 + "." + s_ics_1148;
-                        string SKnoten_Verweis = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + SAP_Material_Number + "-" + CurrentDateShort;
+                        string Strukturknoten_Zeile2 = s_ics_1016 + "." + s_ics_1017 + "." + s_ics_1148;
+                        string SKnoten_Verweis = "EB" + s_ics_1016 + "-" + s_ics_1017 + "-" + SAP_Material_Number + "-" + CurrentDateShort;
                         string Laufende_Nummer = SKnoten_Verweis;
-                        string Text_DE_Str = SKnoten_Verweis + " " + s_ics_1135 + s_ics_1136;
-                        string Strukturknoten_Zeile3 = "EB" + s_ics_1138 + "-" + s_ics_1139 + "-" + SAP_Material_Number + "-" + CurrentDateShort;
+                        string Text_DE_Str = SKnoten_Verweis + " " + s_ics_1013 + s_ics_1014;
+                        string Strukturknoten_Zeile3 = "EB" + s_ics_1016 + "-" + s_ics_1017 + "-" + SAP_Material_Number + "-" + CurrentDateShort;
 
                         // Zeile 2,3,4
-                        // Aug 09, 2022 outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";;" + Text_DE_Str + ";" + s_ics_1135 + ";"+ SKnoten_Verweis);
-                        string Text_Nr = s_ics_1135.PadLeft(6, '0');
+                        // Aug 09, 2022 outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";;" + Text_DE_Str + ";" + s_ics_1013 + ";"+ SKnoten_Verweis);
+                        string Text_Nr = s_ics_1013.PadLeft(6, '0');
                         outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;;" + Text_Nr + ";"+ SKnoten_Verweis);
                         // Aug 09, 2022 outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;" + SKnoten_Verweis + ";1;K;&Ersatzteilblatt;&Spare parts sheet;&Hoja de repuestos;&Feuille des pièces de rechange;Icon_eb;&备件表;ETB;");
                         outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;" + SKnoten_Verweis + ";1;K;Icon_eb;ETB;");
