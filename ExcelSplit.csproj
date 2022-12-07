@@ -148,7 +148,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy  $(TargetPath) K:\KockelkeH\Data\Quanos\bin
+    <PostBuildEvent>REM copy  $(TargetPath) K:\KockelkeH\Data\Quanos\bin
 copy $(TargetPath) C:\plm\nx_plmshare\pmprod13local\pm_tools\ETB</PostBuildEvent>
   </PropertyGroup>
 </Project>

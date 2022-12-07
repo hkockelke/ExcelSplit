@@ -17,6 +17,7 @@ using System.Collections;
  * 1139	                1017
  * 1014	                1018
  * 1013	                1019
+ * Dec 7, 2022: validation step for attributs ics_1016
  * */
 
 namespace ExcelSplit
@@ -44,6 +45,7 @@ namespace ExcelSplit
 
             string csvFilename = Path.GetFileName(csvFile);
             string outname = csvFilename.Replace("_load", "");
+            string outname_wo = Path.GetFileNameWithoutExtension(outname);
 
             DateTime utcDate = DateTime.UtcNow;
             string CurrentDateShort = utcDate.ToString("yyMM");
@@ -51,7 +53,7 @@ namespace ExcelSplit
 
             // create out-dir: outDir/CurrentDateLong_outname
             // and use in the output
-            outDir = Path.Combine(outDir, CurrentDateLong + "_" + outname);
+            outDir = Path.Combine(outDir, CurrentDateLong + "_" + outname_wo);
             if (!Directory.Exists(outDir))
             {
                 Directory.CreateDirectory(outDir);
@@ -186,6 +188,8 @@ namespace ExcelSplit
                 int i_ics_1015 = Convert.ToInt32(columns["1015"]);
                 int i_ics_1016 = Convert.ToInt32(columns["1016"]);
                 int i_ics_1017 = Convert.ToInt32(columns["1017"]);
+                int i_ics_1018 = Convert.ToInt32(columns["1018"]);
+                int i_ics_1019 = Convert.ToInt32(columns["1019"]);
                 int i_ics_1148 = Convert.ToInt32(columns["1148"]);
                 string Mat_lastLine = string.Empty;
                 string Baugruppe_Zeile3 = string.Empty;
@@ -223,6 +227,8 @@ namespace ExcelSplit
                     string s_ics_1015 = fields[i_ics_1015];
                     string s_ics_1016 = fields[i_ics_1016];
                     string s_ics_1017 = fields[i_ics_1017];
+                    string s_ics_1018 = fields[i_ics_1018];
+                    string s_ics_1019 = fields[i_ics_1019];
                     string s_ics_1148 = fields[i_ics_1148];
                     string SAP_Material_Number = fields[i_SAP_Material_Number];
                     string Text_EN = s_ics_1013 + s_ics_1014;
@@ -230,7 +236,36 @@ namespace ExcelSplit
                     s_ics_1016 = s_ics_1016.TrimStart('0');
 
                     int n_SequenceNumber = 0;
-                    
+
+                    // Validation step
+                    if (string.IsNullOrEmpty(s_ics_1013))
+                    {
+                        throw new Exception("Sales Test ID missing");
+                    }
+                    if (string.IsNullOrEmpty(s_ics_1016))
+                    {
+                        throw new Exception("Value missing main group");
+                    }
+                    if ((String.Compare(s_ics_1016, "99") == 0) && (String.Compare(s_ics_1017, "0") == 0))
+                    {
+                        throw new Exception("Main/Sub Group not defined");
+                    }
+                    if ((String.Compare(s_ics_1016, "99") == 0) && (String.Compare(s_ics_1017, "5") == 0))
+                    {
+                        throw new Exception("Material number must be added to collection sheet");
+                    }
+                    if (string.IsNullOrEmpty(s_ics_1017))
+                    {
+                        throw new Exception("Value missing sub group");
+                    }
+                    if (string.IsNullOrEmpty(s_ics_1018))
+                    {
+                        throw new Exception("SPS ID missing");
+                    }
+                    if (string.IsNullOrEmpty(s_ics_1019))
+                    {
+                        throw new Exception("SPS date missing");
+                    }
 
                     string Werknorm = "WN000000";
                     if (!string.IsNullOrEmpty(s_pm5_ir_cp_class_id))
@@ -313,14 +348,17 @@ namespace ExcelSplit
                                 SAP_Material_Number = "Empty SAPMatNo";
                             }
 
+                            // Verweis auf Baugruppe
+                            string Verweis_auf_Baugr = "EB" + s_ics_1016 + "-" + s_ics_1017 + "-" + s_ics_1018 + "-" + s_ics_1019;
+                            
                             // Aug 09, 2022 add J and .
                             if (n_SequenceNumber == 0)
                             {
-                                outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";" + n_SequenceNumber.ToString() + ";" + Quantity + ";" + s_ics_1001 + ";;;;J");
+                                outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + Verweis_auf_Baugr + ";" + n_SequenceNumber.ToString() + ";" + Quantity + ";" + s_ics_1001 + ";;;;J");
                             }
                             else
                             {
-                                outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";" + n_SequenceNumber.ToString() + ";" + Quantity + ";" + s_ics_1001 + ";;;.;J");
+                                outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + Verweis_auf_Baugr + ";" + n_SequenceNumber.ToString() + ";" + Quantity + ";" + s_ics_1001 + ";;;.;J");
                             }
 
                             outputMAT.AppendLine(SAP_Material_Number + ";" + s_pm5_dr_sap_size_dim + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + Werknorm + "; ;  ; ");
