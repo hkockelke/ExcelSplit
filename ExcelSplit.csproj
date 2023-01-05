@@ -149,6 +149,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>REM copy  $(TargetPath) K:\KockelkeH\Data\Quanos\bin
-copy $(TargetPath) C:\plm\nx_plmshare\pmprod13local\pm_tools\ETB</PostBuildEvent>
+copy $(TargetPath) C:\plm\nx_plmshare\pmprod13local\pm_tools\ETB
+copy  $(TargetPath) C:\installnoav</PostBuildEvent>
   </PropertyGroup>
 </Project>

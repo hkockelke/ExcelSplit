@@ -18,6 +18,7 @@ using System.Collections;
  * 1014	                1018
  * 1013	                1019
  * Dec 7, 2022: validation step for attributs ics_1016
+ * Jan 4, 2023: Kat file mit ItemId .*
  * */
 
 namespace ExcelSplit
@@ -284,13 +285,13 @@ namespace ExcelSplit
                         string Baugruppe_Zeile2 = s_ics_1016 + "." + s_ics_1017 + "." + s_ics_1148;
                         Baugruppe_Zeile3 = "EB" + s_ics_1016 + "-" + s_ics_1017 + "-" + s_item_id + "-" + CurrentDateShort;
                         string Teile_Nr_Zeile2 = Baugruppe_Zeile3;
-                        
+
                         // Kat file
                         // 2nd line
                         // Aug 09, 2022 outputKAT.AppendLine(";" + Baugruppe_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + ";" + ";" + ";EZ;");
                         outputKAT.AppendLine("; " + Baugruppe_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + ";" + ";" + ";EZ;;;;;;" + Teile_Nr_Zeile2 + ";;;;");
                         // 3rd line
-                        outputKAT.AppendLine(";" + Baugruppe_Zeile3 + ";" + Teile_Nr_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + ";" + ";" + ";EB;" + Teile_Nr_Zeile2 + "*.*");
+                        outputKAT.AppendLine(";" + Baugruppe_Zeile3 + ";" + Teile_Nr_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + ";" + ";" + ";EB;" + s_item_id + ".*");
                         // 4th line
                         outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";0;1;" + s_ics_1001 + ";;;;J");
                         
