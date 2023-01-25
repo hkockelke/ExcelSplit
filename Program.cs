@@ -19,6 +19,7 @@ using System.Collections;
  * 1013	                1019
  * Dec 7, 2022: validation step for attributs ics_1016
  * Jan 4, 2023: Kat file mit ItemId .*
+ * Jan 25, 2023: die Prüfung für „1013 nicht leer“ nur für BOM Level 0 und 1 
  * */
 
 namespace ExcelSplit
@@ -43,6 +44,9 @@ namespace ExcelSplit
 
             string csvFile = args[0];
             string outDir = args[1];
+            string outDirCreate = string.Empty;
+            string outDirNew = string.Empty;
+            string newName = string.Empty;
 
             string csvFilename = Path.GetFileName(csvFile);
             string outname = csvFilename.Replace("_load", "");
@@ -52,18 +56,51 @@ namespace ExcelSplit
             string CurrentDateShort = utcDate.ToString("yyMM");
             string CurrentDateLong = utcDate.ToString("yyyyMMdd");
 
+            Dictionary<string, string> TC_SAP_Revision = new Dictionary<string, string>()
+            {
+               { "-", "00" },
+               { "A", "01" },
+               { "B", "02" },
+               { "C", "03" },
+               { "D", "04" },
+               { "E", "05" },
+               { "F", "06" },
+               { "G", "07" },
+               { "H", "08" },
+               { "I", "09" },
+               { "J", "10" },
+               { "K", "11" },
+               { "L", "12" },
+               { "M", "13" },
+               { "N", "14" },
+               { "O", "15" },
+               { "P", "16" },
+               { "Q", "17" },
+               { "R", "18" },
+               { "S", "19" },
+               { "T", "20" },
+               { "U", "21" },
+               { "V", "22" },
+               { "W", "23" },
+               { "X", "24" },
+               { "Y", "25" },
+               { "Z", "26" }
+            };
+            string sap_rev = string.Empty;
+            string item_rev = string.Empty;
+
             // create out-dir: outDir/CurrentDateLong_outname
             // and use in the output
-            outDir = Path.Combine(outDir, CurrentDateLong + "_" + outname_wo);
-            if (!Directory.Exists(outDir))
+            outDirCreate = Path.Combine(outDir, CurrentDateLong + "_" + outname_wo);
+            if (!Directory.Exists(outDirCreate))
             {
-                Directory.CreateDirectory(outDir);
+                Directory.CreateDirectory(outDirCreate);
             }
 
-            string KAToutcsvfile = Path.Combine(outDir, "Kat" + CurrentDateLong + "_" + outname);
-            string MAToutcsvfile = Path.Combine(outDir, "Mat" + CurrentDateLong + "_" + outname);
-            string SERoutcsvfile = Path.Combine(outDir, "Ser" + CurrentDateLong + "_" + outname);
-            string STRoutcsvfile = Path.Combine(outDir, "Str" + CurrentDateLong + "_" + outname);
+            string KAToutcsvfile = Path.Combine(outDirCreate, "Kat" + CurrentDateLong + "_" + outname);
+            string MAToutcsvfile = Path.Combine(outDirCreate, "Mat" + CurrentDateLong + "_" + outname);
+            string SERoutcsvfile = Path.Combine(outDirCreate, "Ser" + CurrentDateLong + "_" + outname);
+            string STRoutcsvfile = Path.Combine(outDirCreate, "Str" + CurrentDateLong + "_" + outname);
 
             StringBuilder outputKAT = new StringBuilder();
             StringBuilder outputMAT = new StringBuilder();
@@ -209,7 +246,7 @@ namespace ExcelSplit
                     }
                     if (nbFields < expected_nb_fields)
                     {
-                        throw new Exception("nbFields<expected_nb_fields: " + nbFields.ToString());
+                        throw new Exception("nbFields < expected_nb_fields: " + nbFields.ToString());
                     }
 
                     string Level = fields[i_level];
@@ -235,37 +272,33 @@ namespace ExcelSplit
                     string Text_EN = s_ics_1013 + s_ics_1014;
                     Text_EN = " " + Text_EN.PadLeft(6, '0');
                     s_ics_1016 = s_ics_1016.TrimStart('0');
-
+                   
                     int n_SequenceNumber = 0;
 
                     // Validation step
-                    if (string.IsNullOrEmpty(s_ics_1013))
-                    {
-                        throw new Exception("Sales Test ID missing");
-                    }
-                    if (string.IsNullOrEmpty(s_ics_1016))
-                    {
-                        throw new Exception("Value missing main group");
-                    }
+                    
                     if ((String.Compare(s_ics_1016, "99") == 0) && (String.Compare(s_ics_1017, "0") == 0))
                     {
-                        throw new Exception("Main/Sub Group not defined");
+                        throw new Exception("Main/Sub group not defined");
                     }
                     if ((String.Compare(s_ics_1016, "99") == 0) && (String.Compare(s_ics_1017, "5") == 0))
                     {
                         throw new Exception("Material number must be added to collection sheet");
                     }
-                    if (string.IsNullOrEmpty(s_ics_1017))
+                    if (!string.IsNullOrEmpty(s_ics_1016))
                     {
-                        throw new Exception("Value missing sub group");
-                    }
-                    if (string.IsNullOrEmpty(s_ics_1018))
-                    {
-                        throw new Exception("SPS ID missing");
-                    }
-                    if (string.IsNullOrEmpty(s_ics_1019))
-                    {
-                        throw new Exception("SPS date missing");
+                        if (string.IsNullOrEmpty(s_ics_1017))
+                        {
+                            throw new Exception("Value missing sub group");
+                        }
+                        if (string.IsNullOrEmpty(s_ics_1018))
+                        {
+                            throw new Exception("SPS ID missing");
+                        }
+                        if (string.IsNullOrEmpty(s_ics_1019))
+                        {
+                            throw new Exception("SPS date missing");
+                        }
                     }
 
                     string Werknorm = "WN000000";
@@ -282,9 +315,23 @@ namespace ExcelSplit
                     {
                         icounter++;
 
-                        string Baugruppe_Zeile2 = s_ics_1016 + "." + s_ics_1017 + "." + s_ics_1148;
+                        // Validation step: check only on top level
+                        if (string.IsNullOrEmpty(s_ics_1013))
+                        {
+                            throw new Exception("Level 0: Sales Test ID missing");
+                        }
+                        if (string.IsNullOrEmpty(s_ics_1016))
+                        {
+                            throw new Exception("Value missing main group");
+                        }
+
+                        item_rev = s_item_revision_id.ToUpper();
+                        sap_rev = TC_SAP_Revision[item_rev];
+                        string Baugruppe_Zeile2 = s_ics_1016 + "." + s_ics_1017 + ".1"; // + s_ics_1148;
                         Baugruppe_Zeile3 = "EB" + s_ics_1016 + "-" + s_ics_1017 + "-" + s_item_id + "-" + CurrentDateShort;
                         string Teile_Nr_Zeile2 = Baugruppe_Zeile3;
+
+                        newName = Teile_Nr_Zeile2 + "_" + sap_rev + "_" + item_rev;
 
                         // Kat file
                         // 2nd line
@@ -294,7 +341,7 @@ namespace ExcelSplit
                         outputKAT.AppendLine(";" + Baugruppe_Zeile3 + ";" + Teile_Nr_Zeile2 + ";" + Teile_Nr_Zeile2 + ";" + ";" + ";" + ";EB;" + s_item_id + ".*");
                         // 4th line
                         outputKAT.AppendLine(icounter.ToString() + ";" + Baugruppe_Zeile3 + ";" + SAP_Material_Number + ";" + SAP_Material_Number + ";0;1;" + s_ics_1001 + ";;;;J");
-                        
+
                         // Mat File
                         outputMAT.AppendLine(SAP_Material_Number + ";" + s_pm5_dr_sap_size_dim + ";" + Text_EN + ";J;" + s_ics_1007 + ";" + s_ics_1011 + ";" + s_ics_1012 + ";" + Werknorm + "; ; ; ");
                         // Aug 09, 2022 Mat_lastLine = Baugruppe_Zeile3 + ";" + s_ics_1015 + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";" + Text_EN + ";J;;;;;" + s_ics_1016 + "." + s_ics_1017 + ";" + s_item_id + "-" + CurrentDateShort + ";" + SAP_Material_Number;
@@ -308,7 +355,7 @@ namespace ExcelSplit
                         outputSER.AppendLine(";" + EB_Nr + ";" + EB_Nr + ";" + Text_DE + ";" + s_pm5_dr_sap_size_dim);
 
                         // Str File
-                        string Strukturknoten_Zeile2 = s_ics_1016 + "." + s_ics_1017 + "." + s_ics_1148;
+                        string Strukturknoten_Zeile2 = s_ics_1016 + "." + s_ics_1017 + ".1"; // + s_ics_1148;
                         string SKnoten_Verweis = "EB" + s_ics_1016 + "-" + s_ics_1017 + "-" + SAP_Material_Number + "-" + CurrentDateShort;
                         string Laufende_Nummer = SKnoten_Verweis;
                         string Text_DE_Str = SKnoten_Verweis + " " + s_ics_1013 + s_ics_1014;
@@ -317,7 +364,7 @@ namespace ExcelSplit
                         // Zeile 2,3,4
                         // Aug 09, 2022 outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";" + Text_DE_Str + ";;" + Text_DE_Str + ";" + s_ics_1013 + ";"+ SKnoten_Verweis);
                         string Text_Nr = s_ics_1013.PadLeft(6, '0');
-                        outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;;" + Text_Nr + ";"+ SKnoten_Verweis);
+                        outputSTR.AppendLine(Strukturknoten_Zeile2 + ";" + SKnoten_Verweis + ";;" + Laufende_Nummer + ";B;;" + Text_Nr + ";" + SKnoten_Verweis);
                         // Aug 09, 2022 outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;" + SKnoten_Verweis + ";1;K;&Ersatzteilblatt;&Spare parts sheet;&Hoja de repuestos;&Feuille des pièces de rechange;Icon_eb;&备件表;ETB;");
                         outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;" + SKnoten_Verweis + ";1;K;Icon_eb;ETB;");
                         // Aug 09, 2022 outputSTR.AppendLine(Strukturknoten_Zeile3 + ";;0;2;D;&Dokumentation;&Documentation;&Documentaión;&Documentation;Icon_dok;&文件;DO;");
@@ -326,6 +373,11 @@ namespace ExcelSplit
                     }
                     else if (Level == "1")
                     {
+                        // Validation steps on level 1
+                        if (string.IsNullOrEmpty(s_ics_1013))
+                        {
+                            throw new Exception("Level1: Sales Test ID missing");
+                        }
 
                         if (!itemIds.Contains(s_item_id))
                         {
@@ -351,7 +403,7 @@ namespace ExcelSplit
 
                             // Verweis auf Baugruppe
                             string Verweis_auf_Baugr = "EB" + s_ics_1016 + "-" + s_ics_1017 + "-" + s_ics_1018 + "-" + s_ics_1019;
-                            
+
                             // Aug 09, 2022 add J and .
                             if (n_SequenceNumber == 0)
                             {
@@ -379,6 +431,27 @@ namespace ExcelSplit
             File.WriteAllText(MAToutcsvfile, outputMAT.ToString(), Encoding.UTF8);
             File.WriteAllText(SERoutcsvfile, outputSER.ToString(), Encoding.UTF8);
             File.WriteAllText(STRoutcsvfile, outputSTR.ToString(), Encoding.UTF8);
+
+            // rename the outdir
+            outDirNew = Path.Combine(outDir, newName);
+            if (!Directory.Exists(outDirNew))
+            {
+                // rename also the KAT files to KAT + newName + .csv (and all others)
+                string KAToutcsvfileNew = Path.Combine(outDirCreate, "Kat" + newName + ".csv");
+                string MAToutcsvfileNew = Path.Combine(outDirCreate, "Mat" + newName + ".csv");
+                string SERoutcsvfileNew = Path.Combine(outDirCreate, "Ser" + newName + ".csv");
+                string STRoutcsvfileNew = Path.Combine(outDirCreate, "Str" + newName + ".csv");
+                // Move won't overwrite the file if it is already exists. And it will throw an exception.
+                File.Move(KAToutcsvfile, KAToutcsvfileNew);
+                File.Move(MAToutcsvfile, MAToutcsvfileNew);
+                File.Move(SERoutcsvfile, SERoutcsvfileNew);
+                File.Move(STRoutcsvfile, STRoutcsvfileNew);
+                Directory.Move(outDirCreate, outDirNew);
+            }
+            else
+            {
+                Console.WriteLine("Directory already exists: " + outDirNew);
+            }
         }
 
         /// <summary>
